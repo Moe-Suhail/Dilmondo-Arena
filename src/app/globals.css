@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+:root {
+  --background: #050712;
+  --foreground: #f8fafc;
+}
+
+html {
+  overflow-x: hidden;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-arabic), "IBM Plex Sans Arabic", "Tahoma", "Arial", sans-serif;
+  --font-mono: "Cascadia Mono", "Consolas", monospace;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-arabic), "IBM Plex Sans Arabic", Tahoma, Arial, sans-serif;
+  min-height: 100vh;
+  overflow-x: clip;
+}
+
+:where(p, h1, h2, h3, a, span, button, td, th, label) {
+  overflow-wrap: anywhere;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(245, 197, 66, 0.35);
+  color: #fff;
+}
+
+.arena-shell {
+  background:
+    radial-gradient(circle at 20% 0%, rgba(245, 197, 66, 0.16), transparent 28rem),
+    radial-gradient(circle at 90% 10%, rgba(34, 197, 94, 0.1), transparent 26rem),
+    linear-gradient(145deg, #050712 0%, #0b1024 46%, #14091e 100%);
+}
+
+.glass-card {
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.86), rgba(25, 14, 42, 0.72));
+  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.36);
+  backdrop-filter: blur(18px);
+}
+
+.gold-text {
+  color: #f5c542;
+}
+
+.input-field {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(15, 23, 42, 0.72);
+  padding: 0.75rem 0.9rem;
+  color: #f8fafc;
+  outline: none;
+}
+
+.input-field:focus {
+  border-color: rgba(245, 197, 66, 0.7);
+  box-shadow: 0 0 0 3px rgba(245, 197, 66, 0.12);
+}
+
+.muted {
+  color: #aab3c5;
+}
