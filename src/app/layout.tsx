@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     template: "%s | ساحة Dilmondo",
   },
   description:
-    "دوري العائلة في الفانتسي حيث تكتب البطولات وتفضح القرارات.",
+    "منتدى وصحيفة فكاهية لدوري العائلة في الفانتسي: توثيق للبطولات، رفع لمستوى التحدي، ومساحة تمنع الانسحاب من المرور بصمت.",
   applicationName: "Dilmondo Arena",
   icons: {
     apple: [{ url: "/images/dilmondo-logo.png", type: "image/png" }],
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     description:
-      "دوري العائلة في الفانتسي حيث تكتب البطولات وتفضح القرارات.",
+      "منتدى وصحيفة فكاهية لدوري العائلة في الفانتسي: توثيق للبطولات، رفع لمستوى التحدي، ومساحة تمنع الانسحاب من المرور بصمت.",
     images: [{ url: "/images/dilmondo-logo.png", width: 512, height: 512 }],
     locale: "ar_EG",
     siteName: "Dilmondo Arena",

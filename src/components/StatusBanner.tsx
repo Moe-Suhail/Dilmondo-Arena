@@ -25,9 +25,9 @@ export function StatusBanner({ tone = "info", title, body }: StatusBannerProps) 
     <div className={`rounded-lg border p-4 ${styles[tone]}`}>
       <div className="flex gap-3">
         <Icon className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
-        <div>
-          <p className="font-bold">{title}</p>
-          {body ? <p className="mt-1 text-sm opacity-85">{body}</p> : null}
+        <div className="min-w-0">
+          <p className="font-bold leading-6">{title}</p>
+          {body ? <p className="mt-1 text-sm leading-6 opacity-85">{body}</p> : null}
         </div>
       </div>
     </div>

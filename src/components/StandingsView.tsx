@@ -3,7 +3,7 @@ import { ArrowDown, ArrowUp, Minus } from "lucide-react";
 
 import { Avatar } from "@/components/Avatar";
 import { formatGap, formatNumber } from "@/lib/format";
-import type { ArenaStanding } from "@/lib/types";
+import type { ArenaStanding, Member } from "@/lib/types";
 
 function Movement({ value }: { value: number | null }) {
   if (!value) {
@@ -32,24 +32,74 @@ function Movement({ value }: { value: number | null }) {
   );
 }
 
-export function StandingsView({ standings }: { standings: ArenaStanding[] }) {
+function inactiveComment(member: Member) {
+  if (member.status === "withdrawn") {
+    return "انسحاب رسمي: اختار السلام النفسي وترك الجدول يواصل الضغط على الباقين.";
+  }
+
+  if (member.status === "archived") {
+    return "في الأرشيف: موجود في التاريخ، خارج حسابات الجولة.";
+  }
+
+  return "خارج المنافسة حالياً: الاسم حاضر، والنقاط في إجازة.";
+}
+
+function InactiveMembers({ members }: { members: Member[] }) {
+  if (!members.length) {
+    return null;
+  }
+
+  return (
+    <div className="overflow-hidden rounded-lg border border-rose-300/20 bg-rose-950/15">
+      <div className="border-b border-rose-300/15 px-4 py-3">
+        <p className="text-sm font-bold text-rose-100">خارج خط المنافسة</p>
+      </div>
+      <div className="grid gap-0 divide-y divide-rose-300/12">
+        {members.map((member) => (
+          <div key={member.id} className="flex items-center gap-3 p-4">
+            <Avatar
+              name={member.displayNameAr}
+              imageUrl={member.profileImageUrl}
+              color={member.customColor}
+            />
+            <div className="min-w-0 flex-1">
+              <p className="font-black leading-6 text-white">{member.displayNameAr}</p>
+              <p className="mt-1 text-sm leading-6 text-slate-300">{inactiveComment(member)}</p>
+            </div>
+            <span className="shrink-0 rounded-full border border-rose-300/30 bg-rose-300/10 px-3 py-1 text-xs font-bold text-rose-100">
+              منسحب
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function StandingsView({
+  inactiveMembers = [],
+  standings,
+}: {
+  inactiveMembers?: Member[];
+  standings: ArenaStanding[];
+}) {
   return (
     <div className="space-y-4">
       <div className="grid gap-3 lg:hidden">
         {standings.map((row) => (
           <Link key={row.managerId} href={row.memberUrl} className="glass-card block rounded-lg p-4">
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 items-center gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-300/12 text-lg font-black text-amber-200">
                   {formatNumber(row.rank)}
                 </span>
                 <Avatar name={row.displayName} imageUrl={row.profileImageUrl} color={row.customColor} />
                 <div className="min-w-0">
-                  <p className="truncate font-black text-white">{row.displayName}</p>
-                  <p className="truncate text-sm text-slate-400">{row.nickname} · {row.fplTeamName}</p>
+                  <p className="mobile-card-title font-black text-white">{row.displayName}</p>
+                  <p className="mt-1 text-sm leading-5 text-slate-400">{row.nickname} · {row.fplTeamName}</p>
                 </div>
               </div>
-              <span className="rounded-full border border-amber-300/25 bg-amber-300/10 px-3 py-1 text-xs font-bold text-amber-100">
+              <span className="w-fit rounded-full border border-amber-300/25 bg-amber-300/10 px-3 py-1 text-xs font-bold text-amber-100">
                 {row.statusBadge}
               </span>
             </div>
@@ -114,7 +164,42 @@ export function StandingsView({ standings }: { standings: ArenaStanding[] }) {
               </tr>
             ))}
           </tbody>
+          {inactiveMembers.length ? (
+            <tfoot className="divide-y divide-white/10 border-t border-rose-300/20">
+              {inactiveMembers.map((member) => (
+                <tr key={member.id} className="bg-rose-950/15">
+                  <td className="px-4 py-4 text-xl font-black text-rose-200">—</td>
+                  <td className="px-4 py-4">
+                    <div className="flex items-center gap-3">
+                      <Avatar
+                        name={member.displayNameAr}
+                        imageUrl={member.profileImageUrl}
+                        color={member.customColor}
+                      />
+                      <span>
+                        <span className="block font-black text-white">{member.displayNameAr}</span>
+                        <span className="block text-sm text-slate-400">{member.nickname}</span>
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-4 text-slate-300" colSpan={4}>
+                    {inactiveComment(member)}
+                  </td>
+                  <td className="px-4 py-4 text-sm text-slate-400">—</td>
+                  <td className="px-4 py-4">
+                    <span className="rounded-full border border-rose-300/30 bg-rose-300/10 px-3 py-1 text-xs font-bold text-rose-100">
+                      منسحب
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tfoot>
+          ) : null}
         </table>
+      </div>
+
+      <div className="lg:hidden">
+        <InactiveMembers members={inactiveMembers} />
       </div>
     </div>
   );

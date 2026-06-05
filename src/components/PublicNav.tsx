@@ -33,19 +33,21 @@ export function PublicNav() {
               />
             </span>
             <span>
-              <span className="block text-lg font-black text-white">ساحة Dilmondo</span>
+              <span className="block text-lg font-black text-white">
+                ساحة <bdi dir="ltr">Dilmondo</bdi>
+              </span>
               <span className="block text-xs text-slate-400">Family FPL Arena</span>
             </span>
           </Link>
         </div>
-        <nav className="flex gap-2 overflow-x-auto pb-1">
+        <nav className="grid grid-cols-2 gap-2 pb-1 min-[360px]:grid-cols-3 sm:flex sm:flex-wrap">
           {links.map((link) => {
             const Icon = link.icon;
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className="inline-flex h-10 shrink-0 items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 text-sm text-slate-200 transition hover:border-amber-300/50 hover:bg-amber-300/10 hover:text-amber-100"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-2 text-xs text-slate-200 transition hover:border-amber-300/50 hover:bg-amber-300/10 hover:text-amber-100 sm:px-3 sm:text-sm"
               >
                 <Icon className="h-4 w-4" aria-hidden="true" />
                 {link.label}

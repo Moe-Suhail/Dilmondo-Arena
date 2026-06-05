@@ -51,7 +51,7 @@ export function CountdownCard({
         <CalendarClock className="h-5 w-5" aria-hidden="true" />
         <p className="text-sm font-bold">{label}</p>
       </div>
-      <p className="mt-4 text-3xl font-black text-white">{text}</p>
+      <p className="mt-4 text-2xl font-black leading-8 text-white sm:text-3xl">{text}</p>
       {deadline ? <p className="mt-2 text-sm text-slate-400">{new Date(deadline).toLocaleString("ar-EG")}</p> : null}
     </div>
   );

@@ -17,11 +17,18 @@ const sizes = {
 export function Avatar({ name, imageUrl, color = "#f5c542", size = "md" }: AvatarProps) {
   return (
     <div
-      className={`${sizes[size]} shrink-0 overflow-hidden rounded-full border border-white/15 bg-slate-900 bg-cover bg-center shadow-lg`}
-      style={imageUrl ? { backgroundImage: `url(${imageUrl})` } : undefined}
+      className={`${sizes[size]} shrink-0 overflow-hidden rounded-full border border-white/15 bg-slate-900 shadow-lg`}
       aria-label={name}
     >
-      {!imageUrl ? (
+      {imageUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={imageUrl}
+          alt=""
+          className="h-full w-full object-cover"
+          loading="lazy"
+        />
+      ) : (
         <div
           className="flex h-full w-full items-center justify-center font-bold text-slate-950"
           style={{
@@ -30,7 +37,7 @@ export function Avatar({ name, imageUrl, color = "#f5c542", size = "md" }: Avata
         >
           {initials(name)}
         </div>
-      ) : null}
+      )}
     </div>
   );
 }

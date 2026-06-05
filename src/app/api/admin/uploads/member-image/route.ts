@@ -31,8 +31,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "العضو غير موجود" }, { status: 404 });
   }
 
-  if (file.size > 3 * 1024 * 1024) {
-    return NextResponse.json({ error: "حجم الصورة يجب أن يكون أقل من 3MB" }, { status: 400 });
+  if (file.size > 8 * 1024 * 1024) {
+    return NextResponse.json({ error: "حجم الصورة يجب أن يكون أقل من 8MB" }, { status: 400 });
   }
 
   const extension = path.extname(file.name).toLowerCase();

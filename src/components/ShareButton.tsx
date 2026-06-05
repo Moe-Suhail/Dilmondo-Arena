@@ -3,6 +3,15 @@
 import { useMemo, useState } from "react";
 import { Check, Copy, MessageCircle } from "lucide-react";
 
+function cleanWhatsappText(value: string) {
+  return value
+    .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "")
+    .replace(/[\u200D\uFE0E\uFE0F]/g, "")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 async function copyText(text: string) {
   if (navigator.clipboard?.writeText) {
     await navigator.clipboard.writeText(text);
@@ -23,14 +32,15 @@ async function copyText(text: string) {
 export function ShareButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
   const [failed, setFailed] = useState(false);
+  const cleanText = useMemo(() => cleanWhatsappText(text), [text]);
   const whatsappUrl = useMemo(
-    () => `https://wa.me/?text=${encodeURIComponent(text)}`,
-    [text],
+    () => `https://wa.me/?text=${encodeURIComponent(cleanText)}`,
+    [cleanText],
   );
 
   async function copy() {
     try {
-      await copyText(text);
+      await copyText(cleanText);
       setCopied(true);
       setFailed(false);
       window.setTimeout(() => setCopied(false), 1800);

@@ -17,6 +17,8 @@ function toPatch(member: Member) {
 export function AdminMembersManager({ initialMembers }: { initialMembers: Member[] }) {
   const [members, setMembers] = useState(initialMembers);
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<{ memberId: string; message: string } | null>(null);
   const [cropTarget, setCropTarget] = useState<{ memberId: string; file: File } | null>(null);
 
   function updateLocal(memberId: string, patch: Partial<Member>) {
@@ -38,16 +40,34 @@ export function AdminMembersManager({ initialMembers }: { initialMembers: Member
   }
 
   async function upload(memberId: string, file: File) {
+    setUploadingId(memberId);
+    setUploadError(null);
     const formData = new FormData();
     formData.append("memberId", memberId);
     formData.append("file", file);
-    const response = await fetch("/api/admin/uploads/member-image", {
-      method: "POST",
-      body: formData,
-    });
-    const body = (await response.json()) as { profileImageUrl?: string };
-    if (body.profileImageUrl) {
-      updateLocal(memberId, { profileImageUrl: body.profileImageUrl });
+    try {
+      const response = await fetch("/api/admin/uploads/member-image", {
+        method: "POST",
+        body: formData,
+      });
+      const body = (await response.json()) as { error?: string; profileImageUrl?: string };
+
+      if (!response.ok) {
+        throw new Error(body.error ?? "تعذر رفع الصورة");
+      }
+
+      if (body.profileImageUrl) {
+        updateLocal(memberId, { profileImageUrl: body.profileImageUrl });
+      }
+      return true;
+    } catch (error) {
+      setUploadError({
+        memberId,
+        message: error instanceof Error ? error.message : "تعذر رفع الصورة",
+      });
+      return false;
+    } finally {
+      setUploadingId(null);
     }
   }
 
@@ -98,9 +118,17 @@ export function AdminMembersManager({ initialMembers }: { initialMembers: Member
                 </div>
                 <label className="mt-4 inline-flex h-10 cursor-pointer items-center gap-2 rounded-lg border border-white/10 px-3 text-sm text-slate-200 transition hover:border-amber-300/50 hover:text-amber-200">
                   <ImageUp className="h-4 w-4" aria-hidden="true" />
-                  صورة
+                  {uploadingId === member.id ? "جاري رفع الصورة..." : "رفع صورة"}
                   <input type="file" accept="image/*" className="hidden" onChange={(event) => chooseImage(member.id, event)} />
                 </label>
+                <p className="mt-2 text-xs leading-5 text-slate-400">
+                  اختر الصورة ثم اضبطها بسحب مباشر وتكبير ذكي قبل الرفع.
+                </p>
+                {uploadError?.memberId === member.id ? (
+                  <p className="mt-3 rounded-lg border border-red-400/25 bg-red-500/10 px-3 py-2 text-xs font-bold text-red-100">
+                    {uploadError.message}
+                  </p>
+                ) : null}
               </div>
 
               <div className="grid flex-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -189,8 +217,10 @@ export function AdminMembersManager({ initialMembers }: { initialMembers: Member
           }
           onCancel={() => setCropTarget(null)}
           onApply={async (file) => {
-            await upload(cropTarget.memberId, file);
-            setCropTarget(null);
+            const ok = await upload(cropTarget.memberId, file);
+            if (ok) {
+              setCropTarget(null);
+            }
           }}
         />
       ) : null}

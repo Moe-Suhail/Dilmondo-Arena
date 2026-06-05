@@ -16,11 +16,17 @@ export default async function StandingsPage() {
       <section className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
         <div>
           <p className="text-sm font-bold text-amber-200">الترتيب الرسمي</p>
-          <h1 className="mt-2 text-4xl font-black text-white">جدول Dilmondo الحي</h1>
+          <h1 className="mt-2 text-4xl font-black leading-tight text-white">
+            جدول دوري <bdi dir="ltr">Dilmondo</bdi>
+          </h1>
           <p className="mt-3 text-slate-300">آخر مزامنة: {formatDateTime(arena.lastSyncAt)}</p>
         </div>
         {arena.warning ? <StatusBanner tone="warning" title="تنبيه المزامنة" body={arena.warning} /> : null}
-        {arena.dataAvailable ? <StandingsView standings={arena.standings} /> : <EmptyState />}
+        {arena.dataAvailable ? (
+          <StandingsView inactiveMembers={arena.inactiveMembers} standings={arena.standings} />
+        ) : (
+          <EmptyState />
+        )}
       </section>
     </main>
   );

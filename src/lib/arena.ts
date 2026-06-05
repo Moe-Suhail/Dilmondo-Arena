@@ -116,7 +116,7 @@ export function buildArenaState(store: DilmondoStore): ArenaState {
     lastSyncAt: store.leagueSettings.lastSyncAt,
     warning,
     dataAvailable: standings.length > 0,
-    insights: createInsights(standings, managerGameweeks, seasonSummary),
+    insights: createInsights(standings, managerGameweeks, seasonSummary, latestEvent?.name),
     hallOfFame: store.hallOfFame,
     announcement: activeAnnouncement,
     storageMode: getStorageMode(),

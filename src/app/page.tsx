@@ -29,6 +29,7 @@ export default async function Home() {
   const leader = arena.insights.leader;
   const second = arena.standings[1] ?? null;
   const seasonEnded = arena.seasonSummary.seasonEnded;
+  const leagueName = arena.settings.leagueName.replace("🏆", "").trim() || "Dilmondo 7th";
 
   return (
     <main className="arena-shell min-h-screen">
@@ -40,14 +41,19 @@ export default async function Home() {
             "linear-gradient(90deg, rgba(5,7,18,0.78), rgba(5,7,18,0.48), rgba(5,7,18,0.2)), url('/images/arena-hero.png')",
         }}
       >
-        <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:py-14">
-          <div className="flex min-h-[440px] flex-col justify-center">
-            <p className="text-sm font-bold text-amber-200">Dilmondo 7th 🏆</p>
-            <h1 className="mt-4 max-w-3xl text-4xl font-black leading-tight text-white sm:text-5xl lg:text-6xl">
-              ساحة Dilmondo
+        <div className="mx-auto grid max-w-7xl gap-7 px-4 py-8 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:py-14">
+          <div className="flex min-h-[420px] flex-col justify-center">
+            <p className="text-sm font-bold text-amber-200">ساحة Dilmondo</p>
+            <h1 className="hero-league-title mt-4 flex max-w-4xl flex-wrap items-center gap-3 font-black tracking-normal text-white">
+              <bdi dir="ltr">{leagueName}</bdi>
+              <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-amber-200/45 bg-amber-300/15 text-amber-100 shadow-lg shadow-amber-950/30 sm:h-16 sm:w-16">
+                <Trophy className="h-8 w-8 sm:h-9 sm:w-9" aria-hidden="true" />
+              </span>
             </h1>
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-200">
-              دوري العائلة في الفانتسي... حيث تُكتب البطولات وتُفضح القرارات.
+            <p className="mt-5 max-w-3xl text-base leading-8 text-slate-200 sm:text-lg">
+              منتدى وصحيفة فكاهية لدوري العائلة في الفانتسي: نوثّق البطولات،
+              نرفع مستوى التحدي، ونترك أثراً مكتوباً يجعل الانسحاب في المواسم القادمة
+              قراراً يحتاج شجاعة أكثر من اختيار الكابتن.
             </p>
             {arena.announcement ? (
               <p className="mt-6 max-w-xl rounded-lg border border-amber-300/20 bg-amber-300/10 px-4 py-3 text-sm font-bold text-amber-100">
@@ -77,26 +83,30 @@ export default async function Home() {
               ) : null}
               <div className="relative z-10">
                 {seasonEnded ? (
-                  <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-amber-200/40 bg-amber-200/15 px-3 py-1 text-sm font-black text-amber-100">
-                    <Crown className="h-4 w-4" aria-hidden="true" />
-                    التتويج الرسمي للموسم
-                    <Sparkles className="h-4 w-4" aria-hidden="true" />
-                  </div>
-                ) : null}
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-center gap-4">
+                <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-amber-200/40 bg-amber-200/15 px-3 py-1 text-sm font-black text-amber-100">
+                  <Crown className="h-4 w-4" aria-hidden="true" />
+                  التتويج الرسمي للموسم
+                  <Sparkles className="h-4 w-4" aria-hidden="true" />
+                </div>
+              ) : null}
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex min-w-0 items-center gap-4">
                   <Avatar
                     name={leader.displayName}
                     imageUrl={leader.profileImageUrl}
                     color={leader.customColor}
                     size="xl"
                   />
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-sm font-bold text-amber-200">
                       {seasonEnded ? "بطل الموسم الرسمي" : "مرشح البطولة الحالي"}
                     </p>
-                    <h2 className="mt-2 text-3xl font-black text-white">{leader.displayName}</h2>
-                    <p className="mt-1 text-slate-300">{leader.nickname} · {leader.fplTeamName}</p>
+                    <h2 className="mobile-card-title mt-2 text-2xl font-black text-white sm:text-3xl">
+                      {leader.displayName}
+                    </h2>
+                    <p className="mt-1 text-sm leading-6 text-slate-300 sm:text-base">
+                      {leader.nickname} · {leader.fplTeamName}
+                    </p>
                   </div>
                 </div>
                 {seasonEnded ? (
@@ -105,25 +115,25 @@ export default async function Home() {
                   <Trophy className="h-10 w-10 text-amber-200" aria-hidden="true" />
                 )}
               </div>
-              <p className="mt-6 text-lg leading-8 text-slate-200">
+              <p className="mt-6 text-base leading-8 text-slate-200 sm:text-lg">
                 {seasonEnded
                   ? `اللقب حُسم رسمياً لصالح ${leader.nickname}. الأرقام النهائية لا تترك مساحة للاجتهاد: صدارة، فارق واضح، وموسم كامل انتهى على منصة واحدة. من أراد الاعتراض فليحضّر ما هو أقوى من جدول الترتيب.`
                   : "معالي الأسطورة يتصدر المشهد... والبقية يحاولون فهم ما حدث."}
               </p>
               <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <div className="rounded-lg bg-white/[0.05] p-3">
+                <div className="min-w-0 rounded-lg bg-white/[0.05] p-3">
                   <p className="text-xs text-slate-400">الترتيب</p>
                   <p className="mt-1 text-2xl font-black text-white">#{formatNumber(leader.rank)}</p>
                 </div>
-                <div className="rounded-lg bg-white/[0.05] p-3">
+                <div className="min-w-0 rounded-lg bg-white/[0.05] p-3">
                   <p className="text-xs text-slate-400">الإجمالي</p>
                   <p className="mt-1 text-2xl font-black text-white">{formatNumber(leader.totalPoints)}</p>
                 </div>
-                <div className="rounded-lg bg-white/[0.05] p-3">
+                <div className="min-w-0 rounded-lg bg-white/[0.05] p-3">
                   <p className="text-xs text-slate-400">الجولة</p>
                   <p className="mt-1 text-2xl font-black text-white">{formatNumber(leader.gwPoints)}</p>
                 </div>
-                <div className="rounded-lg bg-white/[0.05] p-3">
+                <div className="min-w-0 rounded-lg bg-white/[0.05] p-3">
                   <p className="text-xs text-slate-400">عن الثاني</p>
                   <p className="mt-1 text-2xl font-black text-white">
                     {second ? formatGap(leader.totalPoints - second.totalPoints) : "لا يوجد"}
@@ -197,11 +207,11 @@ export default async function Home() {
               <div className="glass-card rounded-lg p-5">
                 <div className="flex items-center gap-3">
                   <Medal className="h-5 w-5 text-amber-200" aria-hidden="true" />
-                  <h2 className="text-2xl font-black text-white">أقرب المنافسين</h2>
+                <h2 className="text-xl font-black text-white sm:text-2xl">أقرب المنافسين</h2>
                 </div>
                 <div className="mt-5 grid gap-3">
                   {arena.insights.closestCompetitors.map((row) => (
-                    <div key={row.managerId} className="flex items-center justify-between gap-4 rounded-lg bg-white/[0.04] p-4">
+                    <div key={row.managerId} className="flex items-center justify-between gap-3 rounded-lg bg-white/[0.04] p-3 sm:p-4">
                       <div className="flex min-w-0 items-center gap-3">
                         <Avatar name={row.displayName} imageUrl={row.profileImageUrl} color={row.customColor} />
                         <div className="min-w-0">
@@ -209,7 +219,7 @@ export default async function Home() {
                           <p className="truncate text-sm text-slate-400">{row.nickname}</p>
                         </div>
                       </div>
-                      <div className="text-left">
+                      <div className="shrink-0 text-left">
                         <p className="font-black text-white">{formatNumber(row.totalPoints)}</p>
                         <p className="text-sm text-amber-200">{formatGap(row.gapFromLeader)}</p>
                       </div>
@@ -221,7 +231,7 @@ export default async function Home() {
               <div className="grid gap-5">
                 <div className="glass-card rounded-lg p-5">
                   <p className="text-sm font-bold text-amber-200">تعليق الجولة</p>
-                  <p className="mt-3 text-xl font-black leading-9 text-white">{arena.insights.weeklyDrama}</p>
+                  <p className="mt-3 text-lg font-black leading-8 text-white sm:text-xl sm:leading-9">{arena.insights.weeklyDrama}</p>
                 </div>
                 <CountdownCard
                   deadline={arena.nextEvent?.deadlineTime}
@@ -238,11 +248,11 @@ export default async function Home() {
             </div>
 
             <div>
-              <div className="mb-4 flex items-center justify-between gap-4">
+              <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                 <h2 className="text-2xl font-black text-white">الترتيب الحي</h2>
-                <p className="text-sm text-slate-400">مصدر الأرقام: Fantasy Premier League</p>
+                <p className="text-sm leading-6 text-slate-400">مصدر الأرقام: Fantasy Premier League</p>
               </div>
-              <StandingsView standings={arena.standings} />
+              <StandingsView inactiveMembers={arena.inactiveMembers} standings={arena.standings} />
             </div>
           </>
         )}

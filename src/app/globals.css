@@ -24,8 +24,9 @@ body {
   overflow-x: clip;
 }
 
-:where(p, h1, h2, h3, a, span, button, td, th, label) {
-  overflow-wrap: anywhere;
+:where(p, h1, h2, h3, h4, a, span, button, td, th, label, li) {
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 
 button,
@@ -76,6 +77,42 @@ textarea {
 
 .muted {
   color: #aab3c5;
+}
+
+.text-safe {
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+.text-compact {
+  line-height: 1.45;
+}
+
+.scrollbar-clean {
+  scrollbar-width: none;
+}
+
+.scrollbar-clean::-webkit-scrollbar {
+  display: none;
+}
+
+.hero-league-title {
+  font-size: clamp(2.75rem, 12vw, 5.85rem);
+  line-height: 0.95;
+}
+
+.mobile-card-title {
+  line-height: 1.35;
+}
+
+@media (max-width: 640px) {
+  .glass-card {
+    box-shadow: 0 14px 42px rgba(0, 0, 0, 0.3);
+  }
+
+  .mobile-card-title {
+    font-size: 1rem;
+  }
 }
 
 .champion-card {

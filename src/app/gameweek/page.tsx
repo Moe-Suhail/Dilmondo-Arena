@@ -107,7 +107,7 @@ export default async function GameweekPage() {
                             color={standing!.customColor}
                           />
                           <div>
-                            <p className="font-black text-white">{index === 0 ? "أفضل كابتن" : "أهدأ كابتن"}</p>
+                            <p className="font-black text-white">{index === 0 ? "أفضل اختيار كابتن" : "أضعف اختيار كابتن"}</p>
                             <p className="text-sm text-slate-400">
                               {standing!.nickname} · {snapshot.captainPlayerName ?? "لاعب غير معروف"}
                             </p>
