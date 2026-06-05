@@ -194,5 +194,5 @@ export interface ArenaState {
   insights: ArenaInsights;
   hallOfFame: HallOfFameEntry[];
   announcement: HomepageAnnouncement | null;
-  storageMode: "local-json" | "supabase-ready";
+  storageMode: "local-json" | "supabase";
 }

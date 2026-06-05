@@ -28,7 +28,12 @@ export default async function AdminPage() {
         <MetricCard label="الأعضاء المحليون" value={formatNumber(arena.members.length)} detail="يشمل المنسحبين" icon={Users} />
         <MetricCard label="الترتيب الحي" value={formatNumber(arena.standings.length)} detail="من FPL فقط" icon={Gauge} />
         <MetricCard label="المتصدر" value={arena.insights.leader?.nickname ?? "—"} detail={arena.insights.leader?.fplTeamName} icon={Crown} />
-        <MetricCard label="التخزين" value={arena.storageMode === "local-json" ? "Local" : "Supabase"} detail="جاهز للاستبدال لاحقاً" icon={Database} />
+        <MetricCard
+          label="التخزين"
+          value={arena.storageMode === "local-json" ? "Local" : "Supabase"}
+          detail={arena.storageMode === "local-json" ? "للتطوير فقط" : "جاهز لـ Vercel"}
+          icon={Database}
+        />
       </div>
 
       <div className="glass-card rounded-lg p-5">

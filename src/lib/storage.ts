@@ -1,7 +1,6 @@
-import { promises as fs } from "fs";
-
-import { DATA_DIR, DATA_FILE } from "@/lib/paths";
-import { createDefaultStore, createSeedMembers } from "@/lib/seed";
+import { getLocalStore, saveLocalStore } from "@/lib/local-storage";
+import { hasSupabaseAdminEnv } from "@/lib/supabase-server";
+import { getSupabaseStore, saveSupabaseStore } from "@/lib/supabase-storage";
 import type {
   DilmondoStore,
   HallOfFameEntry,
@@ -10,78 +9,32 @@ import type {
   Member,
 } from "@/lib/types";
 
-let cachedStore: DilmondoStore | null = null;
+type StorageMode = "local-json" | "supabase";
 
-function storageMode() {
-  return process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
-    ? "supabase-ready"
-    : "local-json";
-}
-
-export function getStorageMode(): "local-json" | "supabase-ready" {
-  return storageMode();
-}
-
-function mergeSeedMembers(existing: Member[]): Member[] {
-  const now = new Date().toISOString();
-  const seed = createSeedMembers(now);
-  const byId = new Map(existing.map((member) => [member.id, member]));
-
-  for (const member of seed) {
-    if (!byId.has(member.id)) {
-      byId.set(member.id, member);
-    }
+function shouldUseSupabase() {
+  if (hasSupabaseAdminEnv()) {
+    return true;
   }
 
-  return Array.from(byId.values());
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "Production storage must use Supabase. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.",
+    );
+  }
+
+  return false;
 }
 
-function normalizeStore(value: Partial<DilmondoStore> | null): DilmondoStore {
-  const base = createDefaultStore();
-  const incoming = value ?? {};
-
-  return {
-    ...base,
-    ...incoming,
-    leagueSettings: {
-      ...base.leagueSettings,
-      ...(incoming.leagueSettings ?? {}),
-    },
-    members: mergeSeedMembers(incoming.members?.length ? incoming.members : base.members),
-    standingsSnapshots: incoming.standingsSnapshots ?? [],
-    managerGameweekSnapshots: incoming.managerGameweekSnapshots ?? [],
-    banterTemplates: incoming.banterTemplates?.length
-      ? incoming.banterTemplates
-      : base.banterTemplates,
-    hallOfFame: incoming.hallOfFame ?? [],
-    homepageAnnouncements: incoming.homepageAnnouncements?.length
-      ? incoming.homepageAnnouncements
-      : base.homepageAnnouncements,
-  };
+export function getStorageMode(): StorageMode {
+  return shouldUseSupabase() ? "supabase" : "local-json";
 }
 
 export async function getStore(): Promise<DilmondoStore> {
-  try {
-    const raw = await fs.readFile(DATA_FILE, "utf8");
-    cachedStore = normalizeStore(JSON.parse(raw) as Partial<DilmondoStore>);
-    return cachedStore;
-  } catch (error) {
-    const code = (error as NodeJS.ErrnoException).code;
-    if (code !== "ENOENT") {
-      console.error("Failed to read Dilmondo local store", error);
-    }
-    cachedStore = normalizeStore(null);
-    await saveStore(cachedStore);
-    return cachedStore;
-  }
+  return shouldUseSupabase() ? getSupabaseStore() : getLocalStore();
 }
 
 export async function saveStore(store: DilmondoStore): Promise<DilmondoStore> {
-  await fs.mkdir(DATA_DIR, { recursive: true });
-  const normalized = normalizeStore(store);
-  await fs.writeFile(DATA_FILE, `${JSON.stringify(normalized, null, 2)}\n`, "utf8");
-  cachedStore = normalized;
-  return normalized;
+  return shouldUseSupabase() ? saveSupabaseStore(store) : saveLocalStore(store);
 }
 
 export async function updateStore(

@@ -1,177 +1,164 @@
-# دليل تشغيل ونشر Dilmondo Arena
+# دليل نشر Dilmondo Arena مجانًا على Vercel + Supabase
 
-هذا الدليل يشرح أين توجد لوحة التحكم، كيف تدخل إليها، وكيف تنشر الموقع رسميًا للأصدقاء مع بقاء الإدارة لك فقط.
+هذا هو المسار الرسمي المجاني للمشروع:
+
+- الاستضافة: Vercel Hobby Free
+- قاعدة البيانات: Supabase Free
+- تخزين صور الأعضاء: Supabase Storage Free
+- لا يوجد اعتماد إنتاجي على ملفات JSON محلية أو صور محفوظة على السيرفر
 
 ## 1. روابط الموقع
 
-محليًا على جهازك:
+محليًا:
 
 - الموقع العام: `http://localhost:3000`
 - لوحة التحكم: `http://localhost:3000/admin`
-- إدارة الأعضاء والصور: `http://localhost:3000/admin/members`
+- إدارة الأعضاء: `http://localhost:3000/admin/members`
 - إعدادات الدوري والمزامنة: `http://localhost:3000/admin/settings`
 - قاعة المجد: `http://localhost:3000/admin/hall-of-fame`
 
-بعد النشر استبدل `http://localhost:3000` برابط الموقع الرسمي، مثل:
+بعد النشر:
 
-- الموقع العام: `https://your-site.onrender.com`
-- لوحة التحكم: `https://your-site.onrender.com/admin`
+- الموقع العام: `https://dilmondo-arena.vercel.app`
+- لوحة التحكم: `https://dilmondo-arena.vercel.app/admin`
 
-ملاحظة: رابط لوحة التحكم غير ظاهر في الموقع العام. يجب أن تحفظه أنت أو تضيفه في المفضلة.
+رابط لوحة التحكم غير ظاهر في الموقع العام. احفظه عندك فقط.
 
-## 2. الدخول للوحة التحكم
+## 2. إعداد Supabase
 
-في التطوير المحلي فقط، إذا لم تضبط كلمة مرور، تكون كلمة المرور:
+1. افتح https://supabase.com
+2. أنشئ مشروعًا جديدًا.
+3. افتح `SQL Editor`.
+4. انسخ محتوى الملف التالي وشغله:
 
-```bash
-dilmondo-admin
+```text
+supabase/schema.sql
 ```
 
-في النشر الرسمي يجب ضبط كلمة مرور قوية من متغيرات البيئة:
+هذا ينشئ الجداول:
 
-```bash
-ADMIN_PASSWORD=ضع-كلمة-مرور-قوية
-ADMIN_SESSION_SECRET=سر-طويل-عشوائي-لا-تشاركه
-NEXT_PUBLIC_SITE_URL=https://رابط-موقعك
+- `league_settings`
+- `members`
+- `standings_snapshots`
+- `manager_gameweek_snapshots`
+- `banter_templates`
+- `hall_of_fame`
+- `homepage_announcements`
+
+وينشئ Storage bucket باسم:
+
+```text
+member-avatars
 ```
 
-مثال جيد لـ `ADMIN_SESSION_SECRET`: نص عشوائي طويل 40 حرفًا أو أكثر.
+الصور عامة للقراءة، لكن الرفع والتحديث والحذف يتم فقط من server routes الخاصة بلوحة التحكم.
 
-## 3. ماذا يستطيع الأصدقاء رؤية؟
+## 3. مفاتيح Supabase المطلوبة
 
-الأصدقاء يرون فقط الصفحات العامة:
+من Supabase Dashboard:
 
-- الرئيسية
-- الترتيب
-- تقرير الجولة
-- المباريات
-- هل تعلم؟
-- صفحات الأعضاء
+`Project Settings > API`
 
-الأصدقاء لا يرون رابط الإدارة في التنقل العام. لو عرف أحد رابط `/admin` سيظهر له تسجيل الدخول فقط، ولن يستطيع تعديل شيء بدون كلمة المرور.
+انسخ:
 
-## 4. لماذا نوصي بـ Render حاليًا؟
+- Project URL
+- anon public key
+- service_role key
 
-المشروع حاليًا يحفظ:
+مهم: `service_role key` لا تضعه أبدًا في كود frontend ولا ترسله لأحد.
 
-- بيانات الدوري المحلية في ملف JSON
-- صور الأعضاء المرفوعة
+## 4. متغيرات Vercel
 
-لذلك الأفضل استضافة Node.js مع قرص دائم. Render مناسب لأنه يدعم Next.js كـ Node Web Service ويدعم Persistent Disk لحفظ الملفات بعد إعادة التشغيل أو إعادة النشر.
+في Vercel:
 
-مصادر رسمية:
+`Project > Settings > Environment Variables`
 
-- Render Next.js deployment: https://render.com/docs/deploy-nextjs-app
-- Render Persistent Disks: https://render.com/docs/disks
-- Next.js deployment/self-hosting: https://nextjs.im/docs/14/app/building-your-application/deploying/
-
-## 5. خطوات النشر على Render
-
-### الخطوة 1: ارفع المشروع إلى GitHub
-
-الأفضل أن يكون مجلد `dilmondo-arena` هو جذر المستودع.
-
-إذا كنت تستخدم GitHub Desktop:
-
-1. افتح GitHub Desktop.
-2. اختر `Add Local Repository`.
-3. اختر مجلد:
+أضف:
 
 ```bash
-C:\Users\Mo Adil\Documents\Dilmondo Arena\dilmondo-arena
+NEXT_PUBLIC_SUPABASE_URL=ضع Supabase Project URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY=ضع anon public key
+SUPABASE_SERVICE_ROLE_KEY=ضع service_role key
+ADMIN_PASSWORD=كلمة مرور قوية لك فقط
+ADMIN_SESSION_SECRET=نص طويل عشوائي جدًا
+FPL_LEAGUE_ID=403186
+NEXT_PUBLIC_SITE_URL=https://dilmondo-arena.vercel.app
 ```
 
-4. اعمل Publish repository إلى GitHub.
+`ADMIN_SESSION_SECRET` يجب أن يكون طويلًا، مثل 40 حرفًا أو أكثر.
 
-### الخطوة 2: أنشئ Web Service في Render
+## 5. رفع المشروع إلى GitHub
 
-1. افتح https://render.com
-2. اختر `New +`
-3. اختر `Web Service`
-4. اربط حساب GitHub واختر مستودع `dilmondo-arena`
-5. استخدم هذه الإعدادات:
+داخل مجلد المشروع:
 
 ```bash
-Runtime: Node
-Build Command: npm ci && npm run build
-Start Command: npm run start
+git status
+git add .
+git commit -m "Switch production storage to Supabase"
+git push
 ```
 
-### الخطوة 3: أضف متغيرات البيئة
-
-في Render > Environment أضف:
+إذا لم يكن الريبو مربوطًا بعد:
 
 ```bash
-ADMIN_PASSWORD=كلمة-مرور-خاصة-بك
-ADMIN_SESSION_SECRET=سر-طويل-عشوائي
-NEXT_PUBLIC_SITE_URL=https://رابط-Render-بعد-النشر
-DILMONDO_DATA_DIR=/opt/render/project/src/.dilmondo-data
+git remote add origin https://github.com/Moe-Suhail/Dilmondo-Arena.git
+git branch -M main
+git push -u origin main
 ```
 
-### الخطوة 4: أضف قرص دائم Persistent Disk
+## 6. النشر على Vercel
 
-في Render أضف Disk للخدمة:
+1. افتح https://vercel.com
+2. اختر `Add New Project`.
+3. اختر مستودع GitHub:
 
-```bash
-Mount Path: /opt/render/project/src/.dilmondo-data
+```text
+Moe-Suhail/Dilmondo-Arena
 ```
 
-هذا مهم جدًا حتى لا تضيع صور الأعضاء وتعديلات الإدارة بعد إعادة النشر.
+4. Vercel سيتعرف على Next.js تلقائيًا.
+5. أضف متغيرات البيئة من القسم السابق.
+6. اضغط Deploy.
 
-### الخطوة 5: انشر
+مراجع رسمية:
 
-اضغط Deploy. بعد اكتمال النشر:
+- Vercel Next.js: https://vercel.com/docs/concepts/next.js/overview
+- Vercel Environment Variables: https://vercel.com/docs/projects/environment-variables
+- Supabase Storage: https://supabase.com/docs/guides/storage
+- Supabase public storage URLs: https://supabase.com/docs/guides/storage/serving/downloads/
+
+## 7. أول تشغيل بعد النشر
+
+بعد نجاح Deploy:
 
 1. افتح الموقع العام.
 2. افتح `/admin`.
-3. ادخل بكلمة المرور التي وضعتها في `ADMIN_PASSWORD`.
-4. من `/admin/settings` اضغط تحديث بيانات الدوري.
-5. راجع الصفحة الرئيسية والترتيب والمباريات.
+3. ادخل بكلمة `ADMIN_PASSWORD`.
+4. افتح `/admin/settings`.
+5. اضغط تحديث بيانات الدوري.
+6. افتح الرئيسية والترتيب والمباريات للتأكد من ظهور بيانات FPL.
+7. افتح `/admin/members` وجرب رفع صورة عضو. يجب أن تبقى الصورة بعد إعادة نشر Vercel لأنها محفوظة في Supabase Storage.
 
-## 6. هل يمكن النشر على Vercel؟
+## 8. ماذا يحدث في التطوير المحلي؟
 
-نعم، لكن ليس بالوضع الحالي إذا كنت تريد حفظ صور الأعضاء وتعديلات الإدارة على ملفات محلية.
+إذا لم تضبط Supabase محليًا، يستخدم التطبيق:
 
-Vercel مناسب جدًا لو نقلنا التخزين إلى:
+- `data/dilmondo-store.json`
+- مجلد رفع محلي للتطوير فقط
 
-- Supabase Database + Supabase Storage
-- أو Vercel Blob للصور والملفات
+هذا مقبول محليًا، لكنه غير مستخدم في الإنتاج. في الإنتاج يجب وجود Supabase env vars، وإلا سيرفض التطبيق الاعتماد على local filesystem.
 
-مصدر Vercel Blob الرسمي:
-
-https://vercel.com/docs/vercel-blob
-
-إذا أردت Vercel لاحقًا، الخطوة الصحيحة ستكون ربط التخزين أولًا ثم النشر.
-
-## 7. checklist قبل مشاركة الرابط مع الأصدقاء
-
-- تأكد أن `ADMIN_PASSWORD` ليست كلمة سهلة.
-- تأكد أن `ADMIN_SESSION_SECRET` مضبوط وقوي.
-- تأكد أن رابط `/admin` غير منشور في القروب.
-- جرّب تسجيل الخروج والدخول مرة.
-- جرّب رفع صورة عضو من `/admin/members`.
-- اضغط مزامنة من `/admin/settings`.
-- افتح الموقع من الموبايل وتأكد من الصفحة الرئيسية والترتيب والمباريات.
-
-## 8. أوامر التشغيل
-
-تشغيل محلي:
-
-```bash
-npm install
-npm run dev
-```
-
-فحص قبل النشر:
+## 9. فحص قبل النشر
 
 ```bash
 npm run lint
 npm run build
 ```
 
-تشغيل نسخة الإنتاج محليًا:
+## 10. حماية لوحة التحكم
 
-```bash
-npm run build
-npm run start
-```
+- رابط `/admin` غير ظاهر في التنقل العام.
+- كل API routes الخاصة بالإدارة تتطلب جلسة موقعة.
+- الجلسة تعتمد على secure signed cookies.
+- قاعدة البيانات لا تملك anon policies للجداول.
+- الرفع إلى Storage يتم عبر server route فقط باستخدام service role key.

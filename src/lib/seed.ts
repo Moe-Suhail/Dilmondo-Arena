@@ -6,7 +6,7 @@ import type {
   Member,
 } from "@/lib/types";
 
-export const DEFAULT_LEAGUE_ID = 403186;
+export const DEFAULT_LEAGUE_ID = Number(process.env.FPL_LEAGUE_ID ?? 403186);
 export const DEFAULT_LEAGUE_NAME = "Dilmondo 7th 🏆";
 
 export function createSeedMembers(now = new Date().toISOString()): Member[] {

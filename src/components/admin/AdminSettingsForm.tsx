@@ -12,7 +12,7 @@ export function AdminSettingsForm({
   storageMode,
 }: {
   initialSettings: LeagueSettings;
-  storageMode: "local-json" | "supabase-ready";
+  storageMode: "local-json" | "supabase";
 }) {
   const [settings, setSettings] = useState(initialSettings);
   const [saved, setSaved] = useState(false);
@@ -80,7 +80,7 @@ export function AdminSettingsForm({
       <div className="mt-5 grid gap-3 rounded-lg bg-white/[0.04] p-4 text-sm text-slate-300 md:grid-cols-2">
         <p>آخر مزامنة: {formatDateTime(settings.lastSyncAt)}</p>
         <p>حالة المزامنة: {settings.syncStatus}</p>
-        <p>التخزين: {storageMode === "local-json" ? "Local JSON fallback" : "Supabase env ready"}</p>
+        <p>التخزين: {storageMode === "local-json" ? "Local JSON للتطوير" : "Supabase Production"}</p>
         <p>آخر خطأ: {settings.syncError ?? "لا يوجد"}</p>
       </div>
 

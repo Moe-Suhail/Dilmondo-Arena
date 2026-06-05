@@ -1,10 +1,9 @@
-import { promises as fs } from "fs";
 import path from "path";
 
 import { NextResponse } from "next/server";
 
 import { requireAdminRequest } from "@/lib/auth";
-import { MEMBER_UPLOAD_DIR, memberUploadUrl } from "@/lib/paths";
+import { uploadMemberImage } from "@/lib/member-images";
 import { getStore, updateMember } from "@/lib/storage";
 
 export const dynamic = "force-dynamic";
@@ -26,9 +25,9 @@ export async function POST(request: Request) {
   }
 
   const store = await getStore();
-  const memberExists = store.members.some((member) => member.id === memberId);
+  const existingMember = store.members.find((member) => member.id === memberId);
 
-  if (!memberExists) {
+  if (!existingMember) {
     return NextResponse.json({ error: "العضو غير موجود" }, { status: 404 });
   }
 
@@ -43,12 +42,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "صيغة الصورة غير مدعومة" }, { status: 400 });
   }
 
-  const safeMemberId = memberId.replace(/[^a-z0-9_-]/gi, "-").slice(0, 80);
-  const safeName = `${safeMemberId}-${Date.now()}${extension}`;
-  const absolutePath = path.join(MEMBER_UPLOAD_DIR, safeName);
-  await fs.mkdir(MEMBER_UPLOAD_DIR, { recursive: true });
-  await fs.writeFile(absolutePath, Buffer.from(await file.arrayBuffer()));
-  const profileImageUrl = memberUploadUrl(safeName);
+  const profileImageUrl = await uploadMemberImage(
+    memberId,
+    file,
+    existingMember.profileImageUrl,
+  );
   const member = await updateMember(memberId, { profileImageUrl });
 
   return NextResponse.json({ profileImageUrl, member });
