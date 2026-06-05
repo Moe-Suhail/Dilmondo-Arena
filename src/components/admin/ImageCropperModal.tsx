@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Check, X } from "lucide-react";
+import { Check, Maximize2, Minimize2, RotateCcw, X } from "lucide-react";
 
 type ImageCropperModalProps = {
   file: File;
@@ -9,6 +9,16 @@ type ImageCropperModalProps = {
   onCancel: () => void;
   onApply: (file: File) => Promise<void>;
 };
+
+type CropMode = "contain" | "cover";
+type DragState = { startX: number; startY: number; offsetX: number; offsetY: number } | null;
+
+const EXPORT_SIZE = 640;
+const PREVIEW_SIZE = 288;
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
 
 function loadImage(src: string) {
   return new Promise<HTMLImageElement>((resolve, reject) => {
@@ -35,6 +45,33 @@ function toJpegBlob(canvas: HTMLCanvasElement) {
   });
 }
 
+function getDrawRect(
+  imageWidth: number,
+  imageHeight: number,
+  frameSize: number,
+  zoom: number,
+  offsetX: number,
+  offsetY: number,
+  mode: CropMode,
+) {
+  const baseScale =
+    mode === "cover"
+      ? Math.max(frameSize / imageWidth, frameSize / imageHeight)
+      : Math.min(frameSize / imageWidth, frameSize / imageHeight);
+  const scale = baseScale * zoom;
+  const width = imageWidth * scale;
+  const height = imageHeight * scale;
+  const maxOffsetX = Math.abs(width - frameSize) / 2;
+  const maxOffsetY = Math.abs(height - frameSize) / 2;
+
+  return {
+    height,
+    width,
+    x: (frameSize - width) / 2 + (offsetX / 100) * maxOffsetX,
+    y: (frameSize - height) / 2 + (offsetY / 100) * maxOffsetY,
+  };
+}
+
 export function ImageCropperModal({
   file,
   memberName,
@@ -42,21 +79,64 @@ export function ImageCropperModal({
   onApply,
 }: ImageCropperModalProps) {
   const previewUrl = useMemo(() => URL.createObjectURL(file), [file]);
-  const [zoom, setZoom] = useState(1.15);
+  const [mode, setMode] = useState<CropMode>("contain");
+  const [zoom, setZoom] = useState(1);
   const [offsetX, setOffsetX] = useState(0);
   const [offsetY, setOffsetY] = useState(0);
+  const [imageSize, setImageSize] = useState<{ width: number; height: number } | null>(null);
+  const [drag, setDrag] = useState<DragState>(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => () => URL.revokeObjectURL(previewUrl), [previewUrl]);
+
+  useEffect(() => {
+    let ignore = false;
+    loadImage(previewUrl).then((image) => {
+      if (!ignore) {
+        setImageSize({ width: image.naturalWidth, height: image.naturalHeight });
+      }
+    });
+
+    return () => {
+      ignore = true;
+    };
+  }, [previewUrl]);
+
+  const previewRect = imageSize
+    ? getDrawRect(
+        imageSize.width,
+        imageSize.height,
+        PREVIEW_SIZE,
+        zoom,
+        offsetX,
+        offsetY,
+        mode,
+      )
+    : null;
+
+  function resetCrop(nextMode = mode) {
+    setMode(nextMode);
+    setZoom(1);
+    setOffsetX(0);
+    setOffsetY(0);
+  }
+
+  function moveDrag(clientX: number, clientY: number) {
+    if (!drag) {
+      return;
+    }
+
+    setOffsetX(clamp(drag.offsetX + ((clientX - drag.startX) / PREVIEW_SIZE) * 200, -100, 100));
+    setOffsetY(clamp(drag.offsetY + ((clientY - drag.startY) / PREVIEW_SIZE) * 200, -100, 100));
+  }
 
   async function applyCrop() {
     setSaving(true);
     try {
       const image = await loadImage(previewUrl);
-      const size = 640;
       const canvas = document.createElement("canvas");
-      canvas.width = size;
-      canvas.height = size;
+      canvas.width = EXPORT_SIZE;
+      canvas.height = EXPORT_SIZE;
       const context = canvas.getContext("2d");
 
       if (!context) {
@@ -64,18 +144,19 @@ export function ImageCropperModal({
       }
 
       context.fillStyle = "#0f172a";
-      context.fillRect(0, 0, size, size);
+      context.fillRect(0, 0, EXPORT_SIZE, EXPORT_SIZE);
 
-      const baseScale = Math.max(size / image.naturalWidth, size / image.naturalHeight);
-      const scale = baseScale * zoom;
-      const width = image.naturalWidth * scale;
-      const height = image.naturalHeight * scale;
-      const maxOffsetX = Math.max(0, (width - size) / 2);
-      const maxOffsetY = Math.max(0, (height - size) / 2);
-      const drawX = (size - width) / 2 + (offsetX / 100) * maxOffsetX;
-      const drawY = (size - height) / 2 + (offsetY / 100) * maxOffsetY;
+      const rect = getDrawRect(
+        image.naturalWidth,
+        image.naturalHeight,
+        EXPORT_SIZE,
+        zoom,
+        offsetX,
+        offsetY,
+        mode,
+      );
 
-      context.drawImage(image, drawX, drawY, width, height);
+      context.drawImage(image, rect.x, rect.y, rect.width, rect.height);
       const blob = await toJpegBlob(canvas);
       const safeName = file.name.replace(/\.[^.]+$/, "") || "member-image";
       await onApply(new File([blob], `${safeName}.jpg`, { type: "image/jpeg" }));
@@ -104,24 +185,76 @@ export function ImageCropperModal({
 
         <div className="mt-5 grid gap-5 md:grid-cols-[0.9fr_1.1fr]">
           <div className="mx-auto w-full max-w-72">
-            <div className="aspect-square overflow-hidden rounded-full border border-amber-300/35 bg-slate-950 shadow-2xl">
+            <div
+              className="relative mx-auto aspect-square w-72 max-w-full touch-none overflow-hidden rounded-full border border-amber-300/35 bg-slate-950 shadow-2xl"
+              onPointerDown={(event) => {
+                event.currentTarget.setPointerCapture(event.pointerId);
+                setDrag({
+                  offsetX,
+                  offsetY,
+                  startX: event.clientX,
+                  startY: event.clientY,
+                });
+              }}
+              onPointerMove={(event) => moveDrag(event.clientX, event.clientY)}
+              onPointerUp={() => setDrag(null)}
+              onPointerCancel={() => setDrag(null)}
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={previewUrl}
                 alt=""
-                className="h-full w-full object-cover"
-                style={{
-                  transform: `translate(${offsetX / 3}%, ${offsetY / 3}%) scale(${zoom})`,
-                  transformOrigin: "center",
-                }}
+                draggable={false}
+                className="absolute select-none"
+                style={
+                  previewRect
+                    ? {
+                        height: `${previewRect.height}px`,
+                        transform: `translate(${previewRect.x}px, ${previewRect.y}px)`,
+                        transformOrigin: "top left",
+                        width: `${previewRect.width}px`,
+                      }
+                    : {
+                        height: "100%",
+                        inset: 0,
+                        objectFit: "contain",
+                        width: "100%",
+                      }
+                }
               />
             </div>
             <p className="mt-3 text-center text-xs text-slate-400">
-              هذا الشكل هو الذي سيظهر داخل الدوائر في الموقع.
+              المعاينة النهائية للصورة داخل دوائر الموقع.
             </p>
           </div>
 
           <div className="grid content-start gap-4">
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => resetCrop("contain")}
+                className={`inline-flex h-11 items-center justify-center gap-2 rounded-lg border px-3 text-sm font-bold transition ${
+                  mode === "contain"
+                    ? "border-amber-300 bg-amber-300 text-slate-950"
+                    : "border-white/10 bg-white/[0.04] text-slate-200 hover:border-amber-300/50 hover:text-amber-100"
+                }`}
+              >
+                <Minimize2 className="h-4 w-4" aria-hidden="true" />
+                الصورة كاملة
+              </button>
+              <button
+                type="button"
+                onClick={() => resetCrop("cover")}
+                className={`inline-flex h-11 items-center justify-center gap-2 rounded-lg border px-3 text-sm font-bold transition ${
+                  mode === "cover"
+                    ? "border-amber-300 bg-amber-300 text-slate-950"
+                    : "border-white/10 bg-white/[0.04] text-slate-200 hover:border-amber-300/50 hover:text-amber-100"
+                }`}
+              >
+                <Maximize2 className="h-4 w-4" aria-hidden="true" />
+                ملء الدائرة
+              </button>
+            </div>
             <label className="text-sm font-bold text-slate-200">
               التكبير
               <input
@@ -168,6 +301,15 @@ export function ImageCropperModal({
               >
                 <Check className="h-4 w-4" aria-hidden="true" />
                 {saving ? "جاري الحفظ..." : "حفظ الصورة"}
+              </button>
+              <button
+                type="button"
+                onClick={() => resetCrop()}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-white/10 text-slate-200 transition hover:border-amber-300/50 hover:text-amber-200"
+                aria-label="إعادة الضبط"
+                title="إعادة الضبط"
+              >
+                <RotateCcw className="h-4 w-4" aria-hidden="true" />
               </button>
               <button
                 type="button"

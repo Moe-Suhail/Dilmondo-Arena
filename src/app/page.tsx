@@ -1,4 +1,15 @@
-import { CalendarDays, Flame, Gauge, Medal, ShieldAlert, Trophy, Users } from "lucide-react";
+import {
+  CalendarDays,
+  Crown,
+  Flame,
+  Gauge,
+  Medal,
+  PartyPopper,
+  ShieldAlert,
+  Sparkles,
+  Trophy,
+  Users,
+} from "lucide-react";
 
 import { Avatar } from "@/components/Avatar";
 import { CountdownCard } from "@/components/CountdownCard";
@@ -49,7 +60,29 @@ export default async function Home() {
           </div>
 
           {leader ? (
-            <div className="glass-card self-end rounded-lg p-5">
+            <div
+              className={`glass-card relative self-end overflow-hidden rounded-lg p-5 ${
+                seasonEnded ? "champion-card" : ""
+              }`}
+            >
+              {seasonEnded ? (
+                <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+                  <span className="champion-confetti confetti-1" />
+                  <span className="champion-confetti confetti-2" />
+                  <span className="champion-confetti confetti-3" />
+                  <span className="champion-confetti confetti-4" />
+                  <span className="champion-balloon balloon-1" />
+                  <span className="champion-balloon balloon-2" />
+                </div>
+              ) : null}
+              <div className="relative z-10">
+                {seasonEnded ? (
+                  <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-amber-200/40 bg-amber-200/15 px-3 py-1 text-sm font-black text-amber-100">
+                    <Crown className="h-4 w-4" aria-hidden="true" />
+                    التتويج الرسمي للموسم
+                    <Sparkles className="h-4 w-4" aria-hidden="true" />
+                  </div>
+                ) : null}
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-4">
                   <Avatar
@@ -60,17 +93,21 @@ export default async function Home() {
                   />
                   <div>
                     <p className="text-sm font-bold text-amber-200">
-                      {seasonEnded ? "بطل الموسم" : "مرشح البطولة الحالي"}
+                      {seasonEnded ? "بطل الموسم الرسمي" : "مرشح البطولة الحالي"}
                     </p>
                     <h2 className="mt-2 text-3xl font-black text-white">{leader.displayName}</h2>
                     <p className="mt-1 text-slate-300">{leader.nickname} · {leader.fplTeamName}</p>
                   </div>
                 </div>
-                <Trophy className="h-10 w-10 text-amber-200" aria-hidden="true" />
+                {seasonEnded ? (
+                  <PartyPopper className="h-10 w-10 text-amber-100" aria-hidden="true" />
+                ) : (
+                  <Trophy className="h-10 w-10 text-amber-200" aria-hidden="true" />
+                )}
               </div>
               <p className="mt-6 text-lg leading-8 text-slate-200">
                 {seasonEnded
-                  ? `${leader.nickname} حسم الموسم بالأرقام النهائية... البطولة انتهت والاعتراضات تنتظر اجتماع العائلة.`
+                  ? `اللقب حُسم رسمياً لصالح ${leader.nickname}. الأرقام النهائية لا تترك مساحة للاجتهاد: صدارة، فارق واضح، وموسم كامل انتهى على منصة واحدة. من أراد الاعتراض فليحضّر ما هو أقوى من جدول الترتيب.`
                   : "معالي الأسطورة يتصدر المشهد... والبقية يحاولون فهم ما حدث."}
               </p>
               <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -94,6 +131,7 @@ export default async function Home() {
                 </div>
               </div>
               <p className="mt-5 text-sm text-slate-400">آخر تحديث: {formatDateTime(arena.lastSyncAt)}</p>
+              </div>
             </div>
           ) : (
             <EmptyState />
@@ -109,7 +147,7 @@ export default async function Home() {
             title={seasonEnded ? "الموسم انتهى" : "الموسم مستمر"}
             body={
               seasonEnded
-                ? `تم لعب ${formatNumber(arena.seasonSummary.finishedEvents)} من ${formatNumber(arena.seasonSummary.totalEvents)} جولة. البطل معروف، والجولات المتبقية ${formatNumber(arena.seasonSummary.remainingEvents)}.`
+                ? `تم لعب ${formatNumber(arena.seasonSummary.finishedEvents)} من ${formatNumber(arena.seasonSummary.totalEvents)} جولة. الموسم أُغلق رسمياً، والجولات المتبقية ${formatNumber(arena.seasonSummary.remainingEvents)}.`
                 : `تم لعب ${formatNumber(arena.seasonSummary.finishedEvents)} من ${formatNumber(arena.seasonSummary.totalEvents)} جولة، والمتبقي ${formatNumber(arena.seasonSummary.remainingEvents)}.`
             }
           />

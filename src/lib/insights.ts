@@ -29,26 +29,26 @@ function buildWeeklyDrama(standings: ArenaStanding[], seasonEnded = false): stri
   const leaderGap = second ? leader.totalPoints - second.totalPoints : null;
 
   if (seasonEnded) {
-    return `${display(leader)} بطل الموسم بالأرقام النهائية، والفارق عن أقرب مطارد ${leaderGap ?? 0} نقطة.`;
+    return `${display(leader)} أغلق الموسم على الصدارة رسمياً: ${leader.totalPoints} نقطة وفارق ${leaderGap ?? 0} نقطة عن أقرب مطارد. ملف اللقب حُسم، وما تبقى مجرد مرافعات بعد صافرة النهاية.`;
   }
 
   if (leaderGap !== null && leaderGap <= 25) {
-    return `الصدارة ليست آمنة... ${display(second)} قريب بما يكفي لإزعاج ${display(leader)}.`;
+    return `الصدارة قابلة للاشتعال... ${display(second)} قريب بما يكفي ليحوّل هدوء ${display(leader)} إلى اجتماع طوارئ.`;
   }
 
   if (leaderGap !== null && leaderGap >= 50) {
-    return `${display(leader)} يوسع الفارق... المطاردة تحتاج أكثر من مجرد تفاؤل.`;
+    return `${display(leader)} يوسّع الفارق بثبات... المطاردة هنا تحتاج خطة إنقاذ لا مجرد تفاؤل قبل الديدلاين.`;
   }
 
   if (best.managerId !== leader.managerId && best.gwPoints >= leader.gwPoints + 10) {
-    return `${display(best)} خطف أضواء الجولة، لكن ${display(leader)} ما زال ممسكاً بالصدارة.`;
+    return `${display(best)} سرق أضواء الجولة، لكن ${display(leader)} ما زال يحتفظ بالمشهد الرئيسي والكرسي الأمامي.`;
   }
 
   if (worst.gwPoints < 40) {
-    return `${display(worst)} يعيش جولة صعبة... الأرقام وحدها كافية للتعليق.`;
+    return `${display(worst)} قدّم جولة لا تحتاج تعليقاً قاسياً... الأرقام قامت بالمهمة كاملة.`;
   }
 
-  return "الصراع مشتعل، والفوارق لا تسمح لأي مدير بالاسترخاء.";
+  return "الصراع ما زال مفتوحاً، والفوارق لا تسمح لأي مدير أن يتعامل مع الديدلاين كأنه إشعار عادي.";
 }
 
 function buildFacts(
@@ -98,27 +98,30 @@ function buildFacts(
 
 function buildWhatsapp(standings: ArenaStanding[], drama: string, seasonEnded = false): string {
   if (!standings.length) {
-    return "🏟️ Dilmondo Arena\n\nالبيانات غير متاحة حالياً";
+    return "ساحة Dilmondo Arena\n\nالبيانات غير متاحة حالياً";
   }
 
   const leader = standings[0];
   const second = standings[1];
   const best = [...standings].sort(byGwDesc)[0];
   const worst = [...standings].sort((a, b) => a.gwPoints - b.gwPoints)[0];
+  const gwLabel = seasonEnded ? "آخر جولة" : "الجولة الحالية";
   const lines = [
-    "🏟️ Dilmondo Arena",
+    "ساحة Dilmondo Arena",
+    "====================",
+    seasonEnded ? "تقرير الموسم النهائي" : "تقرير الجولة",
     "",
-    `🏆 ${seasonEnded ? "بطل الموسم" : "المتصدر"}: ${display(leader)}`,
-    `📊 النقاط: ${leader.totalPoints}`,
+    `${seasonEnded ? "البطل الرسمي" : "المتصدر"}: ${display(leader)}`,
+    `النقاط: ${leader.totalPoints}`,
   ];
 
   if (second) {
-    lines.push(`↔️ الفارق عن الثاني: ${leader.totalPoints - second.totalPoints} نقطة`);
+    lines.push(`الفارق عن أقرب مطارد: ${leader.totalPoints - second.totalPoints} نقطة`);
   }
 
-  lines.push(`🔥 أفضل جولة: ${display(best)} - ${best.gwPoints} نقطة`);
-  lines.push(`💀 أقل جولة: ${display(worst)} - ${worst.gwPoints} نقطة`);
-  lines.push("", "تعليق الجولة:", drama);
+  lines.push(`أفضل نتيجة في ${gwLabel}: ${display(best)} - ${best.gwPoints} نقطة`);
+  lines.push(`أقل نتيجة في ${gwLabel}: ${display(worst)} - ${worst.gwPoints} نقطة`);
+  lines.push("", "قراءة سريعة:", drama);
 
   return lines.join("\n");
 }

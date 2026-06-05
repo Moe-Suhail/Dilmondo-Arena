@@ -1,10 +1,10 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   BarChart3,
   CalendarDays,
   Gauge,
   Home,
-  Shield,
   Sparkles,
 } from "lucide-react";
 
@@ -22,8 +22,15 @@ export function PublicNav() {
       <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full border border-amber-300/40 bg-amber-300/10 text-amber-200">
-              <Shield className="h-5 w-5" aria-hidden="true" />
+            <span className="relative h-11 w-11 overflow-hidden rounded-lg border border-amber-300/35 bg-slate-950 shadow-lg">
+              <Image
+                src="/images/dilmondo-logo.png"
+                alt=""
+                fill
+                sizes="44px"
+                className="object-cover"
+                priority
+              />
             </span>
             <span>
               <span className="block text-lg font-black text-white">ساحة Dilmondo</span>
