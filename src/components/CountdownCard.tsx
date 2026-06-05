@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CalendarClock } from "lucide-react";
+import { CalendarClock, ExternalLink } from "lucide-react";
 
 function getRemaining(deadline: string | null) {
   if (!deadline) {
@@ -24,11 +24,19 @@ function getRemaining(deadline: string | null) {
 export function CountdownCard({
   deadline,
   label,
+  description,
   emptyText = "موعد الجولة القادمة غير متاح حالياً",
+  dateText,
+  sourceHref,
+  sourceLabel,
 }: {
   deadline: string | null | undefined;
   label: string;
+  description?: string;
   emptyText?: string;
+  dateText?: string;
+  sourceHref?: string;
+  sourceLabel?: string;
 }) {
   const [remaining, setRemaining] = useState(() => getRemaining(deadline ?? null));
 
@@ -52,7 +60,23 @@ export function CountdownCard({
         <p className="text-sm font-bold">{label}</p>
       </div>
       <p className="mt-4 text-2xl font-black leading-8 text-white sm:text-3xl">{text}</p>
-      {deadline ? <p className="mt-2 text-sm text-slate-400">{new Date(deadline).toLocaleString("ar-EG")}</p> : null}
+      {description ? <p className="mt-3 text-sm leading-6 text-slate-300">{description}</p> : null}
+      {deadline ? (
+        <p className="mt-2 text-sm text-slate-400">
+          {dateText ?? new Date(deadline).toLocaleString("ar-EG")}
+        </p>
+      ) : null}
+      {sourceHref && sourceLabel ? (
+        <a
+          href={sourceHref}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-amber-200 transition hover:text-amber-100"
+        >
+          المصدر الرسمي: {sourceLabel}
+          <ExternalLink className="h-4 w-4" aria-hidden="true" />
+        </a>
+      ) : null}
     </div>
   );
 }

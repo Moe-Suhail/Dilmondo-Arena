@@ -21,6 +21,7 @@ import { StandingsView } from "@/components/StandingsView";
 import { StatusBanner } from "@/components/StatusBanner";
 import { formatDateTime, formatGap, formatNumber } from "@/lib/format";
 import { getArenaState } from "@/lib/arena";
+import { NEXT_FANTASY_SEASON } from "@/lib/next-season";
 
 export const dynamic = "force-dynamic";
 
@@ -162,6 +163,15 @@ export default async function Home() {
             }
           />
         ) : null}
+        <CountdownCard
+          deadline={NEXT_FANTASY_SEASON.startDate}
+          label={`العد التنازلي لبداية فانتزي ${NEXT_FANTASY_SEASON.seasonName}`}
+          emptyText={`بدأ موسم فانتزي ${NEXT_FANTASY_SEASON.seasonName}`}
+          dateText={NEXT_FANTASY_SEASON.startDateText}
+          description={`العداد مبني على موعد الجولة الافتتاحية الرسمي من ${NEXT_FANTASY_SEASON.sourceLabel}. موعد deadline الفانتزي الدقيق يُضبط بعد صدور fixtures الرسمية يوم ${NEXT_FANTASY_SEASON.fixturesReleaseDateText}.`}
+          sourceHref={NEXT_FANTASY_SEASON.sourceUrl}
+          sourceLabel={NEXT_FANTASY_SEASON.sourceLabel}
+        />
         {!arena.dataAvailable ? (
           <EmptyState />
         ) : (
