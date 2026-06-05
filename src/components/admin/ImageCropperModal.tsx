@@ -117,6 +117,7 @@ export function ImageCropperModal({
   const [frameSize, setFrameSize] = useState(DEFAULT_FRAME_SIZE);
   const [drag, setDrag] = useState<DragState>(null);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const frameRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => () => URL.revokeObjectURL(previewUrl), [previewUrl]);
@@ -204,6 +205,7 @@ export function ImageCropperModal({
 
   async function applyCrop() {
     setSaving(true);
+    setError(null);
     try {
       const image = await loadImage(previewUrl);
       const size = { height: image.naturalHeight, width: image.naturalWidth };
@@ -242,6 +244,8 @@ export function ImageCropperModal({
       const blob = await toJpegBlob(canvas);
       const safeName = file.name.replace(/\.[^.]+$/, "") || "member-image";
       await onApply(new File([blob], `${safeName}.jpg`, { type: "image/jpeg" }));
+    } catch (applyError) {
+      setError(applyError instanceof Error ? applyError.message : "تعذر حفظ الصورة");
     } finally {
       setSaving(false);
     }
@@ -380,6 +384,12 @@ export function ImageCropperModal({
                 ? "الوضع الكامل يحافظ على الصورة كاملة ويملأ الخلفية بنسخة ناعمة منها."
                 : "الوضع الحالي يملأ إطار البروفايل. حرّك الصورة حتى تكون أهم التفاصيل في المنتصف."}
             </div>
+
+            {error ? (
+              <p className="rounded-lg border border-red-400/25 bg-red-500/10 px-3 py-2 text-sm font-bold leading-6 text-red-100">
+                {error}
+              </p>
+            ) : null}
 
             <div className="flex flex-wrap gap-2 pt-2">
               <button

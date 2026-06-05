@@ -42,12 +42,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "صيغة الصورة غير مدعومة" }, { status: 400 });
   }
 
-  const profileImageUrl = await uploadMemberImage(
-    memberId,
-    file,
-    existingMember.profileImageUrl,
-  );
-  const member = await updateMember(memberId, { profileImageUrl });
+  try {
+    const profileImageUrl = await uploadMemberImage(
+      memberId,
+      file,
+      existingMember.profileImageUrl,
+    );
+    const member = await updateMember(memberId, { profileImageUrl });
 
-  return NextResponse.json({ profileImageUrl, member });
+    return NextResponse.json({ profileImageUrl, member });
+  } catch (error) {
+    console.error("Member image upload failed", error);
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : "تعذر حفظ صورة العضو",
+      },
+      { status: 500 },
+    );
+  }
 }

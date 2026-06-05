@@ -7,6 +7,10 @@ import { Avatar } from "@/components/Avatar";
 import { ImageCropperModal } from "@/components/admin/ImageCropperModal";
 import type { BanterLevel, Member, MemberStatus } from "@/lib/types";
 
+type UploadResult =
+  | { ok: true }
+  | { ok: false; message: string };
+
 function toPatch(member: Member) {
   return {
     ...member,
@@ -39,7 +43,7 @@ export function AdminMembersManager({ initialMembers }: { initialMembers: Member
     setSavingId(null);
   }
 
-  async function upload(memberId: string, file: File) {
+  async function upload(memberId: string, file: File): Promise<UploadResult> {
     setUploadingId(memberId);
     setUploadError(null);
     const formData = new FormData();
@@ -50,22 +54,35 @@ export function AdminMembersManager({ initialMembers }: { initialMembers: Member
         method: "POST",
         body: formData,
       });
-      const body = (await response.json()) as { error?: string; profileImageUrl?: string };
+      const text = await response.text();
+      let body: { error?: string; profileImageUrl?: string; member?: Member } = {};
+
+      if (text) {
+        try {
+          body = JSON.parse(text) as typeof body;
+        } catch {
+          body = { error: text };
+        }
+      }
 
       if (!response.ok) {
-        throw new Error(body.error ?? "تعذر رفع الصورة");
+        throw new Error(body.error ?? `تعذر رفع الصورة (${response.status})`);
       }
 
-      if (body.profileImageUrl) {
-        updateLocal(memberId, { profileImageUrl: body.profileImageUrl });
+      const profileImageUrl = body.member?.profileImageUrl ?? body.profileImageUrl;
+      if (!profileImageUrl) {
+        throw new Error("تم رفع الملف لكن لم يرجع رابط الصورة المحفوظ.");
       }
-      return true;
+
+      updateLocal(memberId, body.member ?? { profileImageUrl });
+      return { ok: true };
     } catch (error) {
+      const message = error instanceof Error ? error.message : "تعذر رفع الصورة";
       setUploadError({
         memberId,
-        message: error instanceof Error ? error.message : "تعذر رفع الصورة",
+        message,
       });
-      return false;
+      return { ok: false, message };
     } finally {
       setUploadingId(null);
     }
@@ -217,10 +234,11 @@ export function AdminMembersManager({ initialMembers }: { initialMembers: Member
           }
           onCancel={() => setCropTarget(null)}
           onApply={async (file) => {
-            const ok = await upload(cropTarget.memberId, file);
-            if (ok) {
-              setCropTarget(null);
+            const result = await upload(cropTarget.memberId, file);
+            if (!result.ok) {
+              throw new Error(result.message);
             }
+            setCropTarget(null);
           }}
         />
       ) : null}
