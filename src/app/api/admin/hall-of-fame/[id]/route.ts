@@ -41,6 +41,12 @@ export async function DELETE(
   if (!requireAdminRequest(request)) return unauthorized();
   const { id } = await params;
   const store = await getStore();
+  const exists = store.hallOfFame.some((entry) => entry.id === id);
+
+  if (!exists) {
+    return NextResponse.json({ error: "غير موجود" }, { status: 404 });
+  }
+
   store.hallOfFame = store.hallOfFame.filter((entry) => entry.id !== id);
   await saveStore(store);
   return NextResponse.json({ ok: true });

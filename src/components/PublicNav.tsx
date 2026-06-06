@@ -3,6 +3,7 @@ import Link from "next/link";
 import {
   BarChart3,
   CalendarDays,
+  Crown,
   Gauge,
   Home,
   Sparkles,
@@ -13,6 +14,7 @@ const links = [
   { href: "/standings", label: "الترتيب", icon: BarChart3 },
   { href: "/gameweek", label: "تقرير الجولة", icon: Gauge },
   { href: "/fixtures", label: "المباريات", icon: CalendarDays },
+  { href: "/hall-of-fame", label: "قاعة المجد", icon: Crown },
   { href: "/did-you-know", label: "هل تعلم؟", icon: Sparkles },
 ];
 
