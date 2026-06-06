@@ -1,5 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   BarChart3,
   CalendarDays,
@@ -18,7 +21,17 @@ const links = [
   { href: "/did-you-know", label: "هل تعلم؟", icon: Sparkles },
 ];
 
+function isActivePath(pathname: string, href: string) {
+  if (href === "/") {
+    return pathname === href;
+  }
+
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export function PublicNav() {
+  const pathname = usePathname();
+
   return (
     <header className="sticky top-0 z-30 border-b border-white/10 bg-[#050712]/82 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 sm:px-6 lg:px-8">
@@ -42,14 +55,20 @@ export function PublicNav() {
             </span>
           </Link>
         </div>
-        <nav className="grid grid-cols-2 gap-2 pb-1 min-[360px]:grid-cols-3 sm:flex sm:flex-wrap">
+        <nav aria-label="صفحات الموقع" className="grid grid-cols-2 gap-2 pb-1 min-[360px]:grid-cols-3 sm:flex sm:flex-wrap">
           {links.map((link) => {
             const Icon = link.icon;
+            const active = isActivePath(pathname, link.href);
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-2 text-xs text-slate-200 transition hover:border-amber-300/50 hover:bg-amber-300/10 hover:text-amber-100 sm:px-3 sm:text-sm"
+                aria-current={active ? "page" : undefined}
+                className={`inline-flex h-10 items-center justify-center gap-2 rounded-lg border px-2 text-xs font-bold transition sm:px-3 sm:text-sm ${
+                  active
+                    ? "border-amber-200/70 bg-amber-300 text-slate-950 shadow-lg shadow-amber-950/25 hover:bg-amber-200"
+                    : "border-white/10 bg-white/[0.03] text-slate-200 hover:border-amber-300/50 hover:bg-amber-300/10 hover:text-amber-100"
+                }`}
               >
                 <Icon className="h-4 w-4" aria-hidden="true" />
                 {link.label}
